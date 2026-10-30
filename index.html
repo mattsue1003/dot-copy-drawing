@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="點格仿畫・運筆練習：113 題點陣仿畫與對稱補畫，A4 紙本生成器：一頁 1–12 題、同一題練好幾次、隨機運筆題、自己設計題目。">
+<meta name="description" content="點格仿畫・運筆練習：333 題點陣仿畫、英文字母、數字、國字與對稱補畫，A4 紙本生成器：一頁 1–12 題、同一題練好幾次、隨機運筆題、自己設計題目。">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
 </head>
 <body>
@@ -127,7 +127,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .card b{font-family:var(--font-display);font-weight:400;font-size:19px;line-height:1.2}
 .card .ck{position:absolute;top:2px;right:2px;width:30px;height:30px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:grid;place-items:center;font-size:17px;color:transparent}
 .card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 4px 0 var(--accent)}
-.card[aria-pressed="true"] .ck{background:var(--accent);border-color:var(--accent);color:#fff}
+.card[aria-pressed="true"] .ck{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--font-display);font-size:15px;width:auto;min-width:30px;padding:0 6px;border-radius:999px}
+.card.my .th{background:linear-gradient(180deg,#ffd45c,#fff1c2)}
+.card.my .cn{color:#b07800;font-weight:700}
+.lib-group .empty{grid-column:1/-1}
 .card.off{opacity:.45}
 body.design .card .ck{display:none}
 details.notes{background:var(--surface);border:2px solid var(--line);border-radius:24px;padding:14px 20px;box-shadow:0 4px 0 var(--line)}
@@ -167,17 +170,14 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
       <section id="genPanel">
         <div class="group">
           <span class="label">題目從哪裡來</span>
-          <div class="seg" data-key="gsrc"><button data-v="bank">題庫</button><button data-v="random">隨機運筆題</button><button data-v="mine">我的題目</button></div>
+          <div class="seg" data-key="gsrc"><button data-v="bank">題庫＋我的題目</button><button data-v="random">隨機運筆題</button></div>
         </div>
         <div class="group" id="gBank">
-          <span class="label">等級（可以多選）</span>
+          <span class="label">要印哪些（可以多選）</span>
           <div class="seg" id="gLv">
-            <button data-v="1">★ 入門</button><button data-v="2">★★ 進階</button><button data-v="3">★★★ 挑戰</button><button data-v="4">對稱補畫</button>
+            <button data-v="0">我的題目</button><button data-v="1">★ 入門</button><button data-v="2">★★ 進階</button><button data-v="3">★★★ 挑戰</button><button data-v="5">英文字母</button><button data-v="6">數字</button><button data-v="7">國字</button><button data-v="4">對稱補畫</button>
           </div>
           <div class="meta" id="selInfo"></div>
-        </div>
-        <div class="group" id="gMine">
-          <p class="empty" id="mineInfo"></p>
         </div>
         <div class="group" id="gLayout">
           <span class="label">怎麼排</span>
@@ -244,7 +244,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
         <div class="group">
           <span class="label" id="mineLabel">我的題目</span>
           <div class="mine" id="mineList"></div>
-          <button class="ghost" id="minePrint">把我的題目全部印成紙本</button>
+          <button class="ghost" id="minePrint">勾選我的題目，到紙本生成器印</button>
           <p class="note">我的題目存在這個瀏覽器裡；換電腦或清除瀏覽資料會不見，重要的題目記得先印成 PDF。</p>
         </div>
       </section>
@@ -311,7 +311,7 @@ const DISPLAY = '"Huninn","Noto Sans TC","PingFang TC",sans-serif';
 const PAPER = '#fffdf8', INK = '#2c2f3b', HI = '#f07a2a', GO = '#22a06b', AXIS = '#e0483e', DOTC = '#5b6276', GHOST = '#b3bac8';
 function RNG(seed){ let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t>>>15, t | 1); t ^= t + Math.imul(t ^ t>>>7, t | 61); return ((t ^ t>>>14) >>> 0) / 4294967296; }; }
 const stars = n => '★'.repeat(n);
-const lvText = n => n === 4 ? '對稱' : stars(n);
+const lvText = n => ({0:'自編', 4:'對稱', 5:'字母', 6:'數字', 7:'國字'})[n] || stars(n);
 const fontsReady = () => Promise.all([document.fonts ? document.fonts.ready : null, document.fonts ? document.fonts.load('20px Huninn').catch(() => {}) : null]);
 
 /* ---------- 題庫：座標是點陣上的 (第幾個, 第幾排)，從 0 開始；| 分開每一筆，e 是小圓圈 ---------- */
@@ -410,6 +410,60 @@ const LESSONS = [
   L(3,7,'長方體','0,3 4,3 4,6 0,6 0,3|0,3 2,1 6,1 4,3|6,1 6,4 4,6','前面長方形，再畫上面和右邊。'),
   L(3,7,'立體金字塔','3,0 0,5 4,6 6,4 3,0|3,0 4,6','三角形的金字塔，看得到兩個面。'),
   L(3,7,'立體小屋','0,3 2,1 4,3 4,6 0,6 0,3|2,1 4,0 6,2 4,3|6,2 6,5 4,6','屋子正面，再往右後方畫出屋頂和側牆。'),
+
+  // 英文字母（5×5）
+  L(5,5,'A','0,4 2,0 4,4|1,2 3,2'), L(5,5,'B','0,0 0,4 3,4 4,3 3,2 0,2|0,0 3,0 4,1 3,2'), L(5,5,'C','4,0 1,0 0,1 0,3 1,4 4,4'),
+  L(5,5,'D','0,0 0,4 3,4 4,3 4,1 3,0 0,0'), L(5,5,'E','4,0 0,0 0,4 4,4|0,2 3,2'), L(5,5,'F','4,0 0,0 0,4|0,2 3,2'),
+  L(5,5,'G','4,1 3,0 1,0 0,1 0,3 1,4 3,4 4,3 4,2 2,2'), L(5,5,'H','0,0 0,4|4,0 4,4|0,2 4,2'), L(5,5,'I','1,0 3,0|2,0 2,4|1,4 3,4'),
+  L(5,5,'J','1,0 4,0|3,0 3,3 2,4 1,4 0,3'), L(5,5,'K','0,0 0,4|4,0 0,2 4,4'), L(5,5,'L','0,0 0,4 4,4'),
+  L(5,5,'M','0,4 0,0 2,2 4,0 4,4'), L(5,5,'N','0,4 0,0 4,4 4,0'), L(5,5,'O','1,0 3,0 4,1 4,3 3,4 1,4 0,3 0,1 1,0'),
+  L(5,5,'P','0,4 0,0 3,0 4,1 3,2 0,2'), L(5,5,'Q','1,0 3,0 4,1 4,3 3,4 1,4 0,3 0,1 1,0|2,2 4,4'), L(5,5,'R','0,4 0,0 3,0 4,1 3,2 0,2|2,2 4,4'),
+  L(5,5,'S','4,0 1,0 0,1 1,2 3,2 4,3 3,4 0,4'), L(5,5,'T','0,0 4,0|2,0 2,4'), L(5,5,'U','0,0 0,3 1,4 3,4 4,3 4,0'),
+  L(5,5,'V','0,0 2,4 4,0'), L(5,5,'W','0,0 1,4 2,2 3,4 4,0'), L(5,5,'X','0,0 4,4|4,0 0,4'),
+  L(5,5,'Y','0,0 2,2 4,0|2,2 2,4'), L(5,5,'Z','0,0 4,0 0,4 4,4'),
+  // 數字（5×5）
+  L(6,5,'0','1,0 3,0 4,1 4,3 3,4 1,4 0,3 0,1 1,0|1,3 3,1'), L(6,5,'1','1,1 2,0 2,4|1,4 3,4'), L(6,5,'2','0,1 1,0 3,0 4,1 4,2 0,4 4,4'),
+  L(6,5,'3','0,0 4,0 2,2 3,2 4,3 3,4 1,4 0,3'), L(6,5,'4','3,4 3,0 0,3 4,3'), L(6,5,'5','4,0 0,0 0,2 3,2 4,3 3,4 0,4'),
+  L(6,5,'6','3,0 1,0 0,1 0,3 1,4 3,4 4,3 3,2 0,2'), L(6,5,'7','0,0 4,0 1,4'), L(6,5,'8','1,0 3,0 4,1 3,2 1,2 0,1 1,0|1,2 0,3 1,4 3,4 4,3 3,2'),
+  L(6,5,'9','4,2 1,2 0,1 1,0 3,0 4,1 4,3 3,4 1,4'),
+  // 國字（5×5）
+  L(7,5,'一','0,2 4,2'), L(7,5,'二','1,1 3,1|0,3 4,3'), L(7,5,'三','1,0 3,0|1,2 3,2|0,4 4,4'), L(7,5,'十','0,2 4,2|2,0 2,4'),
+  L(7,5,'土','1,1 3,1|2,0 2,4|0,4 4,4'), L(7,5,'士','0,1 4,1|2,0 2,4|1,4 3,4'), L(7,5,'王','0,0 4,0|1,2 3,2|2,0 2,4|0,4 4,4'),
+  L(7,5,'工','0,0 4,0|2,0 2,4|0,4 4,4'), L(7,5,'干','0,0 4,0|0,2 4,2|2,0 2,4'), L(7,5,'上','2,0 2,4|2,2 4,2|0,4 4,4'),
+  L(7,5,'下','0,0 4,0|2,0 2,4|2,2 4,3'), L(7,5,'口','0,0 0,4|0,0 4,0 4,4|0,4 4,4'), L(7,5,'日','0,0 0,4|0,0 4,0 4,4|0,2 4,2|0,4 4,4'),
+  L(7,5,'田','0,0 0,4|0,0 4,0 4,4|2,0 2,4|0,2 4,2|0,4 4,4'), L(7,5,'中','0,1 0,3|0,1 4,1 4,3|0,3 4,3|2,0 2,4'),
+  L(7,5,'山','2,0 2,4|0,1 0,4 4,4|4,1 4,4'), L(7,5,'川','1,0 1,3 0,4|2,1 2,3|4,0 4,4'), L(7,5,'人','2,0 2,1 0,4|2,1 4,4'),
+  L(7,5,'入','1,0 2,1 4,4|2,1 0,4'), L(7,5,'八','1,1 0,4|3,1 4,4'), L(7,5,'大','0,1 4,1|2,0 2,1 0,4|2,1 4,4'),
+  L(7,5,'天','1,0 3,0|0,2 4,2|2,0 2,2 0,4|2,2 4,4'), L(7,5,'夫','1,1 3,1|0,2 4,2|2,0 2,2 0,4|2,2 4,4'),
+  L(7,5,'太','0,1 4,1|2,0 2,1 0,4|2,1 4,4|2,3 3,4'), L(7,5,'小','2,0 2,4|1,1 0,3|3,1 4,3'), L(7,5,'木','0,1 4,1|2,0 2,4|2,1 0,4|2,1 4,4'),
+  L(7,5,'本','0,1 4,1|2,0 2,4|2,1 0,3|2,1 4,3|1,3 3,3'), L(7,5,'火','0,1 1,2|4,1 3,2|2,0 2,2 0,4|2,2 4,4'),
+  L(7,5,'文','2,0 2,1|0,1 4,1|1,1 4,4|3,1 0,4'), L(7,5,'六','2,0 2,1|0,1 4,1|1,2 0,4|3,2 4,4'), L(7,5,'七','0,2 4,1|1,0 1,4 4,4'),
+  L(7,5,'九','2,0 2,2 0,4|0,1 3,1 3,4 4,4'), L(7,5,'力','0,1 4,1 4,4 3,4|2,0 2,2 0,4'), L(7,5,'刀','0,1 4,1 4,4 3,4|2,1 1,3 0,4'),
+  L(7,5,'又','0,0 4,0 3,2 0,4|1,1 4,4'), L(7,5,'女','1,0 0,2 3,4|3,1 2,3 0,4|0,2 4,2'), L(7,5,'子','0,0 4,0 2,1|2,1 2,4 1,4|0,2 4,2'),
+  L(7,5,'了','0,0 4,0 2,1|2,1 2,4 1,4'), L(7,5,'己','0,0 4,0 4,2 0,2 0,4 4,4 4,3'), L(7,5,'弓','0,0 4,0 4,1 1,1 1,2 4,2 4,4 3,4'),
+  L(7,5,'石','0,0 4,0|2,0 0,3|1,2 1,4|1,2 4,2 4,4|1,4 4,4'), L(7,5,'左','0,1 4,1|2,0 0,4|2,2 4,2|3,2 3,4|2,4 4,4'),
+  L(7,5,'右','0,1 4,1|2,0 0,4|1,2 1,4|1,2 4,2 4,4|1,4 4,4'), L(7,5,'古','0,1 4,1|2,0 2,2|1,2 1,4|1,2 3,2 3,4|1,4 3,4'),
+  L(7,5,'生','1,0 0,2|1,1 4,1|1,2 3,2|2,0 2,4|0,4 4,4'), L(7,5,'牛','1,0 0,2|1,1 4,1|0,3 4,3|2,0 2,4'),
+  L(7,5,'午','1,0 0,2|1,1 4,1|0,3 4,3|2,1 2,4'), L(7,5,'半','0,0 1,1|4,0 3,1|1,2 3,2|0,3 4,3|2,0 2,4'),
+  L(7,5,'平','0,0 4,0|1,1 1,2|3,1 3,2|0,3 4,3|2,0 2,4'), L(7,5,'羊','1,0 1,1|3,0 3,1|0,1 4,1|1,2 3,2|0,3 4,3|2,1 2,4'),
+  L(7,5,'正','0,0 4,0|2,0 2,4|2,2 3,2|1,2 1,4|0,4 4,4'), L(7,5,'五','0,0 4,0|2,0 1,4|1,2 3,2 3,4|0,4 4,4'),
+  L(7,5,'千','4,0 1,1|0,2 4,2|2,1 2,4'), L(7,5,'万','0,0 4,0|1,2 4,2 4,4 3,4|1,0 1,2 0,4'), L(7,5,'父','1,0 0,1|3,0 4,1|1,1 4,4|3,1 0,4'),
+  // 國字（7×7）
+  L(7,7,'目','1,0 1,6|1,0 5,0 5,6|1,2 5,2|1,4 5,4|1,6 5,6'), L(7,7,'由','0,2 0,6|0,2 6,2 6,6|3,0 3,6|0,4 6,4|0,6 6,6'),
+  L(7,7,'甲','0,0 0,4|0,0 6,0 6,4|0,2 6,2|0,4 6,4|3,0 3,6'), L(7,7,'申','0,1 0,5|0,1 6,1 6,5|0,3 6,3|0,5 6,5|3,0 3,6'),
+  L(7,7,'早','1,0 1,2|1,0 5,0 5,2|1,1 5,1|1,2 5,2|0,4 6,4|3,2 3,6'), L(7,7,'白','3,0 2,1|1,1 1,5|1,1 5,1 5,5|1,3 5,3|1,5 5,5'),
+  L(7,7,'雨','0,0 6,0|1,1 1,6|1,1 5,1 5,6 4,6|3,0 3,4|2,2 2,3|2,4 2,5|4,2 4,3|4,4 4,5'),
+  L(7,7,'門','0,0 0,6|0,0 2,0 2,2 0,2|0,1 2,1|4,0 6,0 6,6 5,6|4,0 4,2 6,2|4,1 6,1'),
+  L(7,7,'品','2,0 2,2|2,0 4,0 4,2|2,2 4,2|0,3 0,6|0,3 2,3 2,6|0,6 2,6|4,3 4,6|4,3 6,3 6,6|4,6 6,6'),
+  L(7,7,'兄','1,0 1,3|1,0 5,0 5,3|1,3 5,3|2,3 2,5 0,6|4,3 4,6 6,6'), L(7,7,'先','2,0 1,2|1,1 5,1|0,3 6,3|3,0 3,3|2,3 2,5 0,6|4,3 4,6 6,6'),
+  L(7,7,'光','3,0 3,3|1,1 2,2|5,1 4,2|0,3 6,3|2,3 2,5 0,6|4,3 4,6 6,6'), L(7,7,'元','1,0 5,0|0,2 6,2|2,2 2,4 0,6|4,2 4,6 6,6'),
+  L(7,7,'未','1,1 5,1|0,3 6,3|3,0 3,6|3,3 0,6|3,3 6,6'), L(7,7,'末','0,1 6,1|1,3 5,3|3,0 3,6|3,3 0,6|3,3 6,6'),
+  L(7,7,'林','0,1 3,1|1,0 1,6|1,1 0,4|1,1 2,3|3,1 6,1|5,0 5,6|5,1 3,5|5,1 6,4'),
+  L(7,7,'休','2,0 0,3|1,2 1,6|2,2 6,2|4,0 4,6|4,2 2,5|4,2 6,5'), L(7,7,'出','3,0 3,6|1,1 1,3 5,3 5,1|0,4 0,6 6,6 6,4'),
+  L(7,7,'凹','0,0 0,6 6,6 6,0 4,0 4,3 2,3 2,0 0,0'), L(7,7,'用','1,0 1,5 0,6|1,0 5,0 5,6 4,6|1,2 5,2|1,4 5,4|3,0 3,6'),
+  L(7,7,'月','1,0 1,5 0,6|1,0 5,0 5,6 4,6|1,2 5,2|1,4 5,4'), L(7,7,'同','0,0 0,6|0,0 6,0 6,6 5,6|2,2 4,2|2,3 2,5|2,3 4,3 4,5|2,5 4,5'),
+  L(7,7,'向','3,0 2,1|0,1 0,6|0,1 6,1 6,6 5,6|2,3 2,5|2,3 4,3 4,5|2,5 4,5'), L(7,7,'全','3,0 0,2|3,0 6,2|1,3 5,3|2,4 4,4|3,3 3,6|0,6 6,6'),
+  L(7,7,'合','3,0 0,2|3,0 6,2|2,2 4,2|1,3 1,6|1,3 5,3 5,6|1,6 5,6'), L(7,7,'四','0,1 0,6|0,1 6,1 6,6|2,1 2,3 1,4|4,1 4,4 5,4|0,6 6,6'),
   L(4,9,'房子','4,0 0,4 4,4|0,4 0,8 4,8|1,5 2,5 2,6 1,6 1,5|3,8 3,6 4,6','左邊有一扇窗，右邊也要有一扇。','mirror'),
   L(4,9,'城堡','0,8 0,1 1,1 1,2 2,2 2,1 3,1 3,3 4,3|0,8 4,8|3,8 3,6 4,5|1,4 1,6','城牆一凸一凹，右邊也要一樣高。','mirror'),
   L(4,9,'聖誕樹','4,0 2,2 3,2 1,4 2,4 0,6 3,6 3,8 4,8|e2,5','樹枝往外斜，右邊要往右下斜。','mirror'),
@@ -436,9 +490,35 @@ const LESSONS = [
   L(4,9,'南瓜','4,1 3,1 1,2 0,4 1,7 3,8 4,8|4,1 4,0|3,1 2,4 3,8','圓圓的南瓜，瓜紋往外彎。','mirror'),
   L(4,9,'甜筒','4,0 2,1 1,2 1,4 4,4|1,4 4,8|2,4 3,6','上面圓圓的冰淇淋，下面尖尖的甜筒。','mirror'),
 ];
+// 左右對稱的題目自動做成對稱補畫：3×3 放大 4 倍、5×5 放大 2 倍成 9×9，7×7 照原大小
+const gcd = (a,b) => b ? gcd(b, a%b) : a;
+function unitSteps(strokes){ const set = new Set();
+  for (const s of strokes) for (let i=1;i<s.length;i++){ const a = s[i-1], b = s[i], dx = b[0]-a[0], dy = b[1]-a[1], n = gcd(Math.abs(dx), Math.abs(dy)) || 1;
+    for (let k=0;k<n;k++){ const p = [a[0]+dx*k/n, a[1]+dy*k/n], q = [a[0]+dx*(k+1)/n, a[1]+dy*(k+1)/n]; set.add(String(p < q ? [p,q] : [q,p])); } }
+  return set; }
+function isSymmetric(les){ const n = les.g-1, A = unitSteps(les.strokes), B = unitSteps(les.strokes.map(s => s.map(p => [n-p[0], p[1]])));
+  const E = new Set(les.eyes.map(String)); return A.size === B.size && [...A].every(k => B.has(k)) && les.eyes.every(p => E.has(String([n-p[0], p[1]]))); }
+function mirrorHalf(les){
+  const k = {3:4, 5:2, 7:1}[les.g]; if (!k) return null;
+  const g = (les.g-1)*k+1, H = (g-1)/2, out = []; let cur = null;
+  for (const s0 of les.strokes){ const s = s0.map(p => [p[0]*k, p[1]*k]); cur = null;
+    for (let i=1;i<s.length;i++){ let a = s[i-1], b = s[i];
+      if (a[0] > H && b[0] > H){ cur = null; continue; }
+      if (a[0] > H || b[0] > H){ const t = (H-a[0])/(b[0]-a[0]), c = [H, a[1]+(b[1]-a[1])*t]; if (!Number.isInteger(c[1])) return null; if (a[0] > H) a = c; else b = c; }
+      if (same(a, b)){ cur = null; continue; }
+      if (cur && same(cur[cur.length-1], a)) cur.push(b); else { cur = [a, b]; out.push(cur); }
+      if (s[i][0] > H) cur = null; } }
+  const strokes = out;
+  if (!strokes.some(q => q.some(p => p[0] < H))) return null;
+  return {level:4, g, name:les.name, kind:'mirror', strokes, eyes:les.eyes.map(p => [p[0]*k, p[1]*k]).filter(p => p[0] <= H), talk:'中間紅線是鏡子，右邊補成一樣、方向相反。', auto:true};
+}
+{ const auto = LESSONS.filter(l => l.kind !== 'mirror' && isSymmetric(l)).map(mirrorHalf).filter(Boolean);
+  const ORDER = [1,2,3,5,6,7,4], all = [...LESSONS, ...auto];
+  LESSONS.length = 0; for (const lv of ORDER) LESSONS.push(...all.filter(l => l.level === lv)); }
 LESSONS.forEach((les,i) => les.no = i+1);
-const LV_NAME = {1:'★ 入門', 2:'★★ 進階', 3:'★★★ 挑戰', 4:'對稱補畫'};
-const LV_SHORT = {1:'入門', 2:'進階', 3:'挑戰', 4:'對稱'};
+const LV_ORDER = [1,2,3,5,6,7,4];
+const LV_NAME = {1:'★ 入門', 2:'★★ 進階', 3:'★★★ 挑戰', 5:'英文字母', 6:'數字', 7:'國字', 4:'對稱補畫'};
+const LV_SHORT = {1:'入門', 2:'進階', 3:'挑戰', 5:'字母', 6:'數字', 7:'國字', 4:'對稱'};
 const LV_RANGE = {}; LESSONS.forEach(l => { const r = LV_RANGE[l.level] || (LV_RANGE[l.level] = [l.no, l.no]); r[1] = l.no; });
 
 /* ---------- 共用繪圖：點陣框、筆畫、小圓圈 ---------- */
@@ -468,8 +548,9 @@ function wrapText(ctx, text, maxW){ const lines = []; let line = '';
 
 /* ---------- 狀態 ---------- */
 const PKEY = 'dotCopy.prefs.v2', MKEY = 'dotCopy.mine.v1';
-const S = Object.assign({view:'gen', gsrc:'bank', glv:[1,2,3,4], sel:[], arr:'pair', per:'4', style:'dot', hint:'start', cover:'no', rn:'4', rlen:'mid', rdiag:'no', rrows:'6', rpages:'2', seed:20261030, dkind:'copy', dg:'5', tool:'line'}, (() => { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch(e){ return {}; } })());
-S.view = 'gen'; S.gpage = 0; S.sel = (S.sel || []).filter(i => LESSONS[i]);
+const S = Object.assign({view:'gen', gsrc:'bank', glv:[0,1,2,3,4,5,6,7], sel:[], arr:'pair', per:'4', style:'dot', hint:'start', cover:'no', rn:'4', rlen:'mid', rdiag:'no', rrows:'6', rpages:'2', seed:20261030, dkind:'copy', dg:'5', tool:'line'}, (() => { try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch(e){ return {}; } })());
+S.view = 'gen'; S.gpage = 0; if (S.gsrc === 'mine') S.gsrc = 'bank';
+if ((S.pv || 0) < 3){ S.glv = [...new Set([...S.glv, 0, 5, 6, 7])].sort(); S.pv = 3; } S.sel = (S.sel || []).map(k => typeof k === 'number' ? 'b'+k : k).filter(k => typeof k === 'string');
 const savePrefs = () => { try { const o = {...S}; delete o.view; delete o.gpage; localStorage.setItem(PKEY, JSON.stringify(o)); } catch(e){} };
 let MINE = (() => { try { const a = JSON.parse(localStorage.getItem(MKEY)); if (Array.isArray(a)) return a; } catch(e){} return []; })();
 const saveMine = () => { try { localStorage.setItem(MKEY, JSON.stringify(MINE)); } catch(e){ toast('瀏覽器不能存檔，題目可能不會留下來'); } };
@@ -572,7 +653,7 @@ function renderMine(){
     d.innerHTML = `<button class="th" aria-label="編輯 ${m.name}"><img alt=""></button><b>${m.name.replace(/[<&]/g,'')}</b><button class="del">刪除</button>`;
     d.querySelector('img').src = thumb(m, 180).toDataURL('image/png');
     d.querySelector('.th').onclick = () => { if (S.view !== 'design') setView('design'); loadIntoEditor(m, m.id, m.name); toast(`載入「${m.name}」，改好再按存檔`); window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'}); };
-    d.querySelector('.del').onclick = () => { if (!confirm(`要刪除「${m.name}」嗎？`)) return; MINE = MINE.filter(x => x.id !== m.id); if (DS.id === m.id){ DS.id = null; saveDraft(); } saveMine(); renderMine(); updateDesignStat(); if (S.gsrc === 'mine') updateGen(); };
+    d.querySelector('.del').onclick = () => { if (!confirm(`要刪除「${m.name}」嗎？`)) return; MINE = MINE.filter(x => x.id !== m.id); S.sel = S.sel.filter(k => k !== 'm'+m.id); savePrefs(); if (DS.id === m.id){ DS.id = null; saveDraft(); } saveMine(); renderMine(); renderMineGroup(); updateDesignStat(); updateGen(); if (S.gsrc === 'mine') updateGen(); };
     box.appendChild(d); });
   $('#minePrint').disabled = !MINE.length;
 }
@@ -657,7 +738,7 @@ function sheetGrid(c, tasks, o, n, pg, title){
   const R = slotRects(n, !tasks.every(t => t.kind === 'mirror')), fs = clamp(R[0].w/24, 3, 4.4);
   tasks.forEach((t,i) => { const sl = R[i], top = sl.y + fs + 1.6, avH = sl.h - fs - 1.6;
     c.fillStyle = INK; c.font = `${fs}px ${DISPLAY}`; const lb = `${t.no ? t.no + '. ' : ''}${t.name}`; c.fillText(lb, sl.x, sl.y + fs);
-    if (t.level){ const w = c.measureText(lb).width; c.fillStyle = '#f2a900'; c.font = `${fs*.8}px ${DISPLAY}`; c.fillText(lvText(t.level), sl.x + w + 1.6, sl.y + fs); }
+    if (t.level || t.custom){ const w = c.measureText(lb).width; c.fillStyle = '#f2a900'; c.font = `${fs*.8}px ${DISPLAY}`; c.fillText(lvText(t.level), sl.x + w + 1.6, sl.y + fs); }
     if (t.kind === 'mirror'){ const s = Math.min(sl.w, avH); drawTaskBox(c, sl.x + (sl.w-s)/2, top, s, t, 'mirror', o); return; }
     const gap = clamp(sl.w*.05, 4, 9), side = Math.min((sl.w-gap)/2, avH), stack = Math.min(sl.w, (avH-3)/2);
     if (side >= stack){ const x0 = sl.x + (sl.w - (2*side+gap))/2;
@@ -718,9 +799,13 @@ function sheetRandom(c, tasks, o, pg){
 }
 /* 依設定產生每一頁 */
 const taskOf = les => ({kind:les.kind, g:les.g, strokes:les.strokes, eyes:les.eyes, name:les.name, no:les.no || 0, level:les.level || 0, custom:!!les.custom, talk:les.talk || '', idx: les.no ? les.no-1 : -1});
-const mineTask = m => ({...taskOf(m), custom:true, no:0, level:0});
-function bankTasks(){ return S.sel.length ? S.sel.slice().sort((a,b) => a-b).map(i => taskOf(LESSONS[i])) : LESSONS.filter(l => S.glv.includes(l.level)).map(taskOf); }
-function srcTasks(){ return S.gsrc === 'mine' ? MINE.map(mineTask) : bankTasks(); }
+const mineTask = m => ({...taskOf(m), custom:true, no:0, level:0, mid:m.id});
+const MINE_BY = () => Object.fromEntries(MINE.map(m => [m.id, m]));
+function keyTask(k){ if (k[0] === 'b'){ const l = LESSONS[+k.slice(1)]; return l ? taskOf(l) : null; } const m = MINE_BY()[k.slice(1)]; return m ? mineTask(m) : null; }
+// 有勾選：照勾選的順序印（我的題目和題庫可以混在一起）；沒勾選：照上面選的類別
+function bankTasks(){ if (S.sel.length) return S.sel.map(keyTask).filter(Boolean);
+  return [...(S.glv.includes(0) ? MINE.map(mineTask) : []), ...LESSONS.filter(l => S.glv.includes(l.level)).map(taskOf)]; }
+const srcTasks = bankTasks;
 function layoutPages(tasks, arr, per, titleBase){
   const o = {style:S.style, hint:S.hint}, n = +per;
   if (n === 1) return tasks.map((t,i) => k => page(k, c => sheetOne(c, t, o, `${i+1} / ${tasks.length}`)));
@@ -728,14 +813,14 @@ function layoutPages(tasks, arr, per, titleBase){
   const chunks = []; for (let i=0;i<tasks.length;i+=n) chunks.push(tasks.slice(i, i+n));
   return chunks.map((ch,i) => k => page(k, c => sheetGrid(c, ch, o, n, `${i+1} / ${chunks.length}`, titleBase)));
 }
-function genTitle(){ if (S.gsrc === 'mine') return '我的運筆題目'; if (S.sel.length) return '點格仿畫：精選題目'; return S.glv.length === 4 ? '點格仿畫' : '點格仿畫：' + S.glv.map(l => LV_SHORT[l]).join('・'); }
+function genTitle(){ if (S.sel.length) return '點格仿畫：精選題目'; if (S.glv.length === 1 && S.glv[0] === 0) return '我的運筆題目'; return S.glv.filter(l => l).length === 7 ? '點格仿畫' : '點格仿畫：' + S.glv.map(l => LV_SHORT[l] || '自編').join('・'); }
 function genTaskPages(){
   if (S.gsrc === 'random'){ const n = +S.rpages, o = {style:S.style, hint:S.hint}; return Array.from({length:n}, (_,i) => k => page(k, c => sheetRandom(c, randomTasks(i), o, `${i+1} / ${n}`))); }
   return layoutPages(srcTasks(), S.arr, S.per, genTitle());
 }
 async function makeCovers(k, tasks){
   await fontsReady(); await thumbsReady;
-  const imgs = $$('.card img'), cols = 8, gap = 2.5, cw = (174 - (cols-1)*gap)/cols, ch = cw + 7.5, pages = [];
+  const imgs = LESSONS.map((l,i) => $(`.card[data-k="b${i}"] img`)), cols = 8, gap = 2.5, cw = (174 - (cols-1)*gap)/cols, ch = cw + 7.5, pages = [];
   let i = 0, first = true;
   while (i < tasks.length || first){
     const startY = first ? 78 : 18, rows = Math.floor((285 - startY)/(ch+gap)), batch = tasks.slice(i, i + rows*cols), isFirst = first;
@@ -753,9 +838,9 @@ async function makeCovers(k, tasks){
       }
       batch.forEach((t, j) => { const col = j%cols, row = Math.floor(j/cols), X = 18+col*(cw+gap), Y = startY+row*(ch+gap);
         roundRect(c, X, Y, cw, ch, 2.2, '#fff', '#cfe2f5');
-        const im = cw-3, img = imgs[t.idx]; if (img && img.complete && img.naturalWidth) c.drawImage(img, X+1.5, Y+1.5, im, im);
-        c.fillStyle = INK; c.font = `2.6px ${DISPLAY}`; c.fillText(`${t.no}. ${t.name}`, X+1.4, Y+cw+2.4);
-        c.fillStyle = '#f2a900'; c.font = `2.2px ${DISPLAY}`; c.fillText(t.level === 4 ? '對稱補畫' : `${stars(t.level)}・${t.g}×${t.g}`, X+1.4, Y+cw+5.4); });
+        const im = cw-3, img = t.mid ? thumb(t, 160) : imgs[t.idx]; if (img && (img.getContext || (img.complete && img.naturalWidth))) c.drawImage(img, X+1.5, Y+1.5, im, im);
+        c.fillStyle = INK; c.font = `2.6px ${DISPLAY}`; c.fillText(t.no ? `${t.no}. ${t.name}` : t.name, X+1.4, Y+cw+2.4);
+        c.fillStyle = '#f2a900'; c.font = `2.2px ${DISPLAY}`; c.fillText(t.custom ? `自己設計・${t.kind === 'mirror' ? '對稱' : t.g+'×'+t.g}` : t.level === 4 ? '對稱補畫' : t.level > 4 ? `${LV_NAME[t.level]}・${t.g}×${t.g}` : `${stars(t.level)}・${t.g}×${t.g}`, X+1.4, Y+cw+5.4); });
     }));
     i += batch.length; first = false; if (!batch.length) break;
   }
@@ -781,7 +866,7 @@ let genFns = [], genCv = null, genSeq = 0, genMsg = '';
 async function updateGen(){
   const seq = ++genSeq; await new Promise(r => setTimeout(r, 100)); if (seq !== genSeq) return; await fontsReady(); if (seq !== genSeq) return;
   genFns = S.view === 'gen' ? genTaskPages() : []; S.gpage = clamp(S.gpage, 0, Math.max(0, genFns.length-1));
-  genMsg = S.gsrc === 'mine' && !MINE.length ? '還沒有我的題目' : S.gsrc === 'bank' && !S.sel.length && !S.glv.length ? '至少選一個等級' : '';
+  genMsg = S.gsrc === 'bank' && !bankTasks().length ? (S.glv.length === 1 && S.glv[0] === 0 ? '還沒有我的題目' : '至少選一個類別') : '';
   genCv = genFns.length ? genFns[S.gpage](pvK()) : null; updateUI(); render();
 }
 const pvK = () => clamp(stage.height/297*1.1, 2.4, 6);
@@ -808,7 +893,7 @@ $('#pgPrev').onclick = () => showPage(S.gpage-1);
 $('#pgNext').onclick = () => showPage(S.gpage+1);
 $('#genPdf').onclick = () => { const fns = genTaskPages(); if (!fns.length){ toast(genMsg || '沒有可以印的題目'); return; }
   const arrTag = +S.per === 1 ? '一頁1題' : S.arr === 'repeat' ? `每題練${S.per}格` : `一頁${S.per}題`;
-  const name = S.gsrc === 'random' ? `運筆練習_隨機題_${S.rn}x${S.rn}_${fns.length}張.pdf` : S.gsrc === 'mine' ? `我的運筆題目_${MINE.length}題_${arrTag}.pdf` : `點格仿畫_${S.sel.length ? `精選${S.sel.length}題` : S.glv.map(l => LV_SHORT[l]).join('')}_${arrTag}.pdf`;
+  const name = S.gsrc === 'random' ? `運筆練習_隨機題_${S.rn}x${S.rn}_${fns.length}張.pdf` : `點格仿畫_${S.sel.length ? `精選${S.sel.length}題` : S.glv.map(l => LV_SHORT[l] || '自編').join('')}_${arrTag}.pdf`;
   buildPdf(fns, name, S.gsrc === 'bank' && S.cover === 'yes' ? bankTasks() : null); };
 
 /* 題庫 */
@@ -816,36 +901,51 @@ let thumbsReady;
 function thumb(les, res){ const cv = mk(res), c = cv.getContext('2d'), k = res/1000; c.scale(k,k); c.fillStyle = PAPER; c.fillRect(0,0,1000,1000);
   const B = gridBox(70, 70, 860, les.g); drawGrid(c, B, {style:'dot', glw:3, alw:12, r:[9,18], bw:0, axis:les.kind === 'mirror', bg:PAPER});
   inkStyle(c, INK, clamp(B.cell*.11, 16, 30)); les.strokes.forEach(s => strokeOn(c, B, s)); les.eyes.forEach(p => eyeOn(c, B, p, clamp(B.cell*.09, 12, 24), INK)); return cv; }
-{ const lib = $('#library'), labels = {1:'★ 入門・3×3、4×4 點', 2:'★★ 進階・5×5 點', 3:'★★★ 挑戰・7×7 點', 4:'對稱補畫・9×9 點'};
-  for (const lv of [1,2,3,4]){
+{ const lib = $('#library'), labels = {1:'★ 入門・3×3、4×4 點', 2:'★★ 進階・5×5 點', 3:'★★★ 挑戰・7×7 點', 5:'英文字母 A–Z・5×5 點', 6:'數字 0–9・5×5 點', 7:'國字・5×5、7×7 點', 4:'對稱補畫・7×7、9×9 點'};
+  for (const lv of LV_ORDER){
     const [from, to] = LV_RANGE[lv], g = document.createElement('div'); g.className = 'lib-group'; g.dataset.lv = lv;
     g.innerHTML = `<h3>${labels[lv]}・第 ${from}–${to} 題（${to-from+1} 題）</h3><div class="cards"></div>`;
     const cards = g.querySelector('.cards');
     LESSONS.forEach((les, i) => { if (les.level !== lv) return;
-      const b = document.createElement('button'); b.className = 'card'; b.dataset.i = i;
+      const b = document.createElement('button'); b.className = 'card'; b.dataset.k = 'b'+i;
       b.innerHTML = `<span class="th"><img alt=""></span><span class="ck" aria-hidden="true">✓</span><span class="cn">第 ${les.no} 題・${les.g}×${les.g}</span><b>${les.name}</b>`;
-      b.onclick = () => cardClick(i);
+      b.onclick = () => cardClick('b'+i);
       cards.appendChild(b); });
     lib.appendChild(g);
   }
-  thumbsReady = (async () => { await new Promise(r => setTimeout(r, 50)); for (let i=0;i<LESSONS.length;i++){ const img = $(`.card[data-i="${i}"] img`); img.src = thumb(LESSONS[i], 220).toDataURL('image/png'); await new Promise(r => img.complete ? r() : (img.onload = r)); if (i % 12 === 11) await new Promise(r => setTimeout(r, 0)); } })();
+  const mg = document.createElement('div'); mg.className = 'lib-group'; mg.id = 'mineGroup'; lib.querySelector('.libhead').after(mg);
+  thumbsReady = (async () => { await new Promise(r => setTimeout(r, 50)); for (let i=0;i<LESSONS.length;i++){ const img = $(`.card[data-k="b${i}"] img`); img.src = thumb(LESSONS[i], 220).toDataURL('image/png'); await new Promise(r => img.complete ? r() : (img.onload = r)); if (i % 12 === 11) await new Promise(r => setTimeout(r, 0)); } })();
 }
-function cardClick(i){
-  const les = LESSONS[i];
-  if (S.view === 'design'){ loadIntoEditor(les, null, `${les.name}（改編）`); toast(`載入第 ${les.no} 題「${les.name}」，可以改了再存`); window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'}); return; }
-  if (S.gsrc !== 'bank'){ S.gsrc = 'bank'; toast('切換到「題庫」'); }
-  S.sel = S.sel.includes(i) ? S.sel.filter(x => x !== i) : [...S.sel, i];
+function renderMineGroup(){
+  const g = $('#mineGroup');
+  g.innerHTML = `<h3>我的題目（${MINE.length} 題）・和題庫一起勾選、一起排版</h3><div class="cards"></div>`;
+  const cards = g.querySelector('.cards');
+  if (!MINE.length) cards.innerHTML = '<p class="empty">還沒有我的題目。到「自己設計題目」畫一題，按「存到我的題目」，就會出現在這裡。</p>';
+  MINE.forEach(m => { const b = document.createElement('button'); b.className = 'card my'; b.dataset.k = 'm'+m.id;
+    b.innerHTML = `<span class="th"><img alt=""></span><span class="ck" aria-hidden="true">✓</span><span class="cn">我的題目・${m.kind === 'mirror' ? '對稱' : m.g+'×'+m.g}</span><b></b>`;
+    b.querySelector('b').textContent = m.name; b.querySelector('img').src = thumb(m, 220).toDataURL('image/png');
+    b.onclick = () => cardClick('m'+m.id); cards.appendChild(b); });
+  updateLib();
+}
+function cardClick(k){
+  if (S.view === 'design'){
+    if (k[0] === 'm'){ const m = MINE_BY()[k.slice(1)]; if (m){ loadIntoEditor(m, m.id, m.name); toast(`載入「${m.name}」，改好再按存檔`); } }
+    else { const les = LESSONS[+k.slice(1)]; loadIntoEditor(les, null, `${les.name}（改編）`); toast(`載入第 ${les.no} 題「${les.name}」，可以改了再存`); }
+    window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'}); return; }
+  if (S.gsrc !== 'bank'){ S.gsrc = 'bank'; toast('切換到「題庫＋我的題目」'); }
+  S.sel = S.sel.includes(k) ? S.sel.filter(x => x !== k) : [...S.sel, k];
   S.gpage = 0; savePrefs(); updateLib(); updateGen(); updateUI();
 }
+const levelOfKey = k => k[0] === 'm' ? 0 : LESSONS[+k.slice(1)].level;
 function updateLib(){
   const design = S.view === 'design';
   document.body.classList.toggle('design', design);
-  $('#libHow').textContent = design ? '點一題載入到畫板改編，改好存成我的題目。' : '點一題就會勾選；有勾選時只印勾選的題目，沒勾選就印上面選的等級。';
+  $('#libHow').textContent = design ? '點一題載入到畫板：題庫的題目會另存成新題，我的題目會直接修改。' : '點一題就會勾選，數字是印出來的順序，我的題目和題庫可以混著選；沒勾選時就印上面選的類別。';
   $('#libBtns').hidden = design;
-  $$('.card').forEach(c => { const i = +c.dataset.i; c.setAttribute('aria-pressed', String(!design && S.sel.includes(i)));
-    c.classList.toggle('off', !design && S.gsrc === 'bank' && !S.sel.length && !S.glv.includes(LESSONS[i].level)); });
+  $$('.card').forEach(c => { const k = c.dataset.k, n = S.sel.indexOf(k); c.setAttribute('aria-pressed', String(!design && n >= 0)); c.querySelector('.ck').textContent = n >= 0 ? n+1 : '✓';
+    c.classList.toggle('off', !design && S.gsrc === 'bank' && !S.sel.length && !S.glv.includes(levelOfKey(k))); });
 }
-$('#selAll').onclick = () => { const vis = LESSONS.map((l,i) => i).filter(i => S.glv.includes(LESSONS[i].level)); S.sel = [...new Set([...S.sel, ...vis])]; S.gsrc = 'bank'; S.gpage = 0; savePrefs(); updateLib(); updateGen(); updateUI(); toast(`勾選了 ${S.sel.length} 題`); };
+$('#selAll').onclick = () => { const vis = $$('.card').map(c => c.dataset.k).filter(k => S.glv.includes(levelOfKey(k))); S.sel = [...new Set([...S.sel, ...vis])]; S.gsrc = 'bank'; S.gpage = 0; savePrefs(); updateLib(); updateGen(); updateUI(); toast(`勾選了 ${S.sel.length} 題`); };
 $('#selNone').onclick = () => { S.sel = []; S.gpage = 0; savePrefs(); updateLib(); updateGen(); updateUI(); };
 
 /* 自己設計：按鈕 */
@@ -858,11 +958,11 @@ $('#dNew').onclick = () => { pushHist(); Object.assign(DS, blankDesign()); DS.ac
 $('#dSave').onclick = () => { penUp(); const t = designTask(); if (!validDesign(t)) return;
   const rec = {id: DS.id || ('m' + Date.now().toString(36)), name:t.name, kind:t.kind, g:t.g, strokes:t.strokes, eyes:t.eyes};
   const k = MINE.findIndex(m => m.id === rec.id); if (k >= 0) MINE[k] = rec; else MINE.push(rec);
-  DS.id = rec.id; saveMine(); saveDraft(); renderMine(); updateDesignStat(); updateUI(); render(); toast(k >= 0 ? `已更新「${t.name}」` : `已存到我的題目（共 ${MINE.length} 題）`); };
+  DS.id = rec.id; saveMine(); saveDraft(); renderMine(); renderMineGroup(); updateDesignStat(); updateUI(); render(); toast(k >= 0 ? `已更新「${t.name}」` : `已存到我的題目（共 ${MINE.length} 題）`); };
 $('#dPrint').onclick = () => { penUp(); const t = designTask(); if (!validDesign(t)) return;
   const o = {style:S.style, hint:S.hint}, n = t.kind === 'mirror' ? 4 : t.g <= 4 ? 9 : t.g <= 6 ? 6 : 4;
   buildPdf([k => page(k, c => sheetRepeat(c, t, o, n, ''))], `運筆題目_${t.name}.pdf`, null); };
-$('#minePrint').onclick = () => { if (!MINE.length) return; S.gsrc = 'mine'; savePrefs(); setView('gen'); toast('切換到紙本生成器：我的題目'); };
+$('#minePrint').onclick = () => { if (!MINE.length) return; S.gsrc = 'bank'; S.sel = [...new Set([...S.sel, ...MINE.map(m => 'm'+m.id)])]; savePrefs(); setView('gen'); window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'}); toast(`已勾選我的題目，共勾選 ${S.sel.length} 題；可以再到題庫加選`); };
 $('#dName').oninput = () => { DS.name = $('#dName').value; saveDraft(); render(); };
 
 $$('.modes button').forEach(b => b.onclick = () => setView(b.dataset.view));
@@ -905,13 +1005,13 @@ function updateUI(){
   $$('.modes button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === S.view)));
   $('#genPanel').hidden = !gen; $('#designPanel').hidden = gen;
   for (const el of $$('.seg[data-key]')) el.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(S[el.dataset.key]))));
-  $$('#gLv button').forEach(b => { b.setAttribute('aria-pressed', String(S.glv.includes(+b.dataset.v))); b.disabled = S.sel.length > 0; });
+  $$('#gLv button').forEach(b => { b.setAttribute('aria-pressed', String(S.glv.includes(+b.dataset.v))); b.disabled = S.sel.length > 0; if (b.dataset.v === '0') b.textContent = `我的題目（${MINE.length}）`; });
   if (gen){
-    $('#gBank').hidden = S.gsrc !== 'bank'; $('#gMine').hidden = S.gsrc !== 'mine'; $('#gLayout').hidden = rnd; $('#gRandom').hidden = !rnd; $('#gCover').hidden = S.gsrc !== 'bank';
+    $('#gBank').hidden = S.gsrc !== 'bank'; $('#gLayout').hidden = rnd; $('#gRandom').hidden = !rnd; $('#gCover').hidden = S.gsrc !== 'bank';
     const tasks = rnd ? [] : srcTasks();
     $('#selInfo').innerHTML = S.sel.length ? `<span class="chip">已勾選 ${S.sel.length} 題，只印勾選的</span><button class="ghost" style="width:auto;flex:0 0 auto;min-height:36px;padding:2px 14px" id="selNone2">清除勾選</button>` : `<span class="chip">共 ${tasks.length} 題</span><span class="note">也可以在下方題庫點選要印的題目</span>`;
     const sn = $('#selNone2'); if (sn) sn.onclick = () => $('#selNone').click();
-    $('#mineInfo').textContent = MINE.length ? `我的題目有 ${MINE.length} 題。到「自己設計題目」可以新增或修改。` : '還沒有我的題目。到「自己設計題目」畫一題，按「存到我的題目」。';
+    
     $$('.seg[data-key="per"] button').forEach(b => b.disabled = S.arr === 'repeat' && b.dataset.v === '1');
     $('#perLabel').textContent = S.arr === 'repeat' ? '一頁幾格（第 1 格是範例，其他是練習）' : '一頁幾題';
     $('#perNote').textContent = rnd ? '' : n === 1 ? '一頁 1 題：上面小範例、下面大格練習，附步驟說明，適合視力較弱或第一次練。'
@@ -951,9 +1051,9 @@ new MutationObserver(retheme).observe(document.documentElement, {attributes:true
 
 { const b = $('#sky'); b.appendChild(document.createElement('i')); for (let i=0;i<18;i++){ const sp = document.createElement('span'); sp.style.setProperty('--w', (70 + (i*37)%60) + 'px'); sp.style.setProperty('--x', (i*6 - 3 + (i*13)%5) + '%'); b.appendChild(sp); } }
 $$('.nles').forEach(s => s.textContent = LESSONS.length);
-$('#lvNotes').innerHTML = [1,2,3,4].map(lv => { const [a,b] = LV_RANGE[lv]; return `<li>${LV_NAME[lv]} 第 ${a}–${b} 題：${({1:'3×3、4×4 點，直線、橫線、斜線和簡單形狀。', 2:'5×5 點，轉彎多、有兩到四筆的生活物品。', 3:'7×7 點的動物、物品和立體圖。', 4:'9×9 點，看著紅線鏡子補出另一半，最需要空間轉換。'})[lv]}</li>`; }).join('');
+$('#lvNotes').innerHTML = LV_ORDER.map(lv => { const [a,b] = LV_RANGE[lv]; return `<li>${LV_NAME[lv]} 第 ${a}–${b} 題：${({1:'3×3、4×4 點，直線、橫線、斜線和簡單形狀。', 2:'5×5 點，轉彎多、有兩到四筆的生活物品。', 3:'7×7 點的動物、物品和立體圖。', 5:'5×5 點的英文字母，熟悉的形狀好上手。', 6:'5×5 點的數字 0–9。', 7:'常用國字，照筆順一筆一筆寫，認字也練手。', 4:'看著紅線鏡子補出另一半，最需要空間轉換。'})[lv]}</li>`; }).join('');
 $('#dName').value = DS.name || '我的題目';
-readTokens(); updateDesignStat(); renderMine(); updateLib(); updateUI(); resize();
+readTokens(); updateDesignStat(); renderMine(); renderMineGroup(); updateUI(); resize();
 fontsReady().then(updateGen);
 window.__dotcopy = {S, LESSONS, get MINE(){ return MINE; }, get DS(){ return DS; }, setView, page, sheetOne, sheetGrid, sheetRepeat, sheetRandom, genTaskPages, makeCovers, bankTasks, thumb};
 })();
