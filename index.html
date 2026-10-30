@@ -751,10 +751,10 @@ function sheetRepeat(c, t, o, n, pg){
   const mirror = t.kind === 'mirror';
   sheetHeader(c, `${mirror ? '對稱補畫' : '照著畫'}：${t.name}`, tagOf(t), `列印選「實際大小 100%」・同一題練 ${mirror ? n : n-1} 次${o.hint === 'trace' ? '・由「描線→看起點→自己畫」慢慢來' : HINT_SUB[o.hint] ? '・' + HINT_SUB[o.hint] : ''}`);
   const R = slotRects(n, false), fs = clamp(R[0].w/24, 3, 4.4);
-  R.forEach((sl,i) => { const s = Math.min(sl.w, sl.h-fs-1.6), x = sl.x + (sl.w-s)/2, y = sl.y + fs + 1.6;
-    if (mirror){ smallLabel(c, `第 ${i+1} 次`, x, sl.y+fs, '#2f86d6', fs); drawTaskBox(c, x, y, s, t, 'mirror', {...o, hint:progHint(o.hint, i)}); }
-    else if (i === 0){ smallLabel(c, '範例', x, sl.y+fs, '#5f6680', fs); drawTaskBox(c, x, y, s, t, 'example', o); }
-    else { smallLabel(c, `第 ${i} 次`, x, sl.y+fs, '#2f86d6', fs); drawTaskBox(c, x, y, s, t, 'practice', {...o, hint:progHint(o.hint, i-1)}); } });
+  R.forEach((sl,i) => { const s = Math.min(sl.w, sl.h-fs-1.6), x = sl.x + (sl.w-s)/2, y = sl.y + fs + 1.6 + (sl.h-fs-1.6-s)/2, ly = y - 1.6;
+    if (mirror){ smallLabel(c, `第 ${i+1} 次`, x, ly, '#2f86d6', fs); drawTaskBox(c, x, y, s, t, 'mirror', {...o, hint:progHint(o.hint, i)}); }
+    else if (i === 0){ smallLabel(c, '範例', x, ly, '#5f6680', fs); drawTaskBox(c, x, y, s, t, 'example', o); }
+    else { smallLabel(c, `第 ${i} 次`, x, ly, '#2f86d6', fs); drawTaskBox(c, x, y, s, t, 'practice', {...o, hint:progHint(o.hint, i-1)}); } });
   sheetFooter(c, pg);
 }
 /* 隨機運筆題 */
